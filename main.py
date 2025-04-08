@@ -5,15 +5,25 @@ import re
 import uuid
 import random
 import string
+from urllib.parse import urlparse, parse_qs
 
 app = Flask(__name__)
 
 @app.route("/pow")
 def proof_of_work():
-    # Ambil parameter dari query string
-    application_id = request.args.get("applicationId")
-    hostname = request.args.get("hostname")
-    location_id = request.args.get("locationId")
+    # Ambil parameter URL jika disediakan
+    url = request.args.get("url")
+
+    if url:
+        parsed_url = urlparse(url)
+        query_params = parse_qs(parsed_url.query)
+        application_id = query_params.get("applicationId", [None])[0]
+        hostname = query_params.get("hostname", [None])[0]
+        location_id = query_params.get("locationId", [None])[0]
+    else:
+        application_id = request.args.get("applicationId")
+        hostname = request.args.get("hostname")
+        location_id = request.args.get("locationId")
 
     # Validasi parameter
     if not application_id or not hostname or not location_id:
