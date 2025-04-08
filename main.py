@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import hashlib
 import requests
 import os
+from urllib.parse import urlparse, parse_qsl
 
 app = Flask(__name__)
 
@@ -34,9 +35,8 @@ def auto_pow():
         sessionId = data.get("sessionId")
         instanceId = data.get("instanceId")
         
-        # Extract query params
-        parsed = requests.utils.urlparse(hydrate_url)
-        query_params = dict(requests.utils.parse_qsl(parsed.query))
+        parsed = urlparse(hydrate_url)
+        query_params = dict(parse_qsl(parsed.query))
         client_id = query_params.get("applicationId")
         location_id = query_params.get("locationId")
 
