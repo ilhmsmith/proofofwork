@@ -41,6 +41,10 @@ def proof_of_work():
     instance_id = data.get("instanceId")
     session_id = data.get("sessionId")
 
+    # Tambahkan padding pada session_id jika perlu
+    if session_id and len(session_id) % 4 != 0:
+        session_id += "=" * (4 - len(session_id) % 4)
+
     if not instance_id or not session_id:
         return jsonify({"error": "Incomplete data from hydrate response"}), 500
 
