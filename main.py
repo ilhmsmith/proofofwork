@@ -63,6 +63,7 @@ def proof_of_work():
     # Kembalikan data yang dirapikan
     return jsonify({
         "client_id": application_id,
+        "hostname": hostname,
         "instance_id": instance_id,
         "location_id": location_id,
         "pow_counter": nonce,
