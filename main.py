@@ -2,6 +2,9 @@ from flask import Flask, request, jsonify
 import hashlib
 import requests
 import re
+import uuid
+import random
+import string
 
 app = Flask(__name__)
 
@@ -31,6 +34,12 @@ def proof_of_work():
     if not instance_id or not session_id:
         return jsonify({"error": "Incomplete data from hydrate response"}), 500
 
+    # Generate GUID dan 4 fingerprint
+    guid = str(uuid.uuid4())
+    fingerprints = [
+        ''.join(random.choices(string.hexdigits.lower(), k=32)) for _ in range(4)
+    ]
+
     # Lakukan proof of work
     prefix = "000"
     nonce = 0
@@ -47,7 +56,9 @@ def proof_of_work():
         "instance_id": instance_id,
         "location_id": location_id,
         "pow_counter": nonce,
-        "session_id": session_id
+        "session_id": session_id,
+        "guid": guid,
+        "fingerprints": fingerprints
     })
 
 if __name__ == "__main__":
