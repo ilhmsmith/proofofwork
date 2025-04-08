@@ -1,6 +1,7 @@
-import requests
 from flask import Flask, request, jsonify
 import hashlib
+import requests
+import os
 
 app = Flask(__name__)
 
@@ -33,7 +34,7 @@ def auto_pow():
         sessionId = data.get("sessionId")
         instanceId = data.get("instanceId")
         
-        # Extract query params from original URL
+        # Extract query params
         parsed = requests.utils.urlparse(hydrate_url)
         query_params = dict(requests.utils.parse_qsl(parsed.query))
         client_id = query_params.get("applicationId")
@@ -57,3 +58,7 @@ def auto_pow():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
