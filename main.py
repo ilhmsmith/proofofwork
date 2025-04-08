@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import hashlib
-import requests
-from urllib.parse import urlparse, parse_qsl
+import urllib.parse
 
 app = Flask(__name__)
 
@@ -21,48 +20,37 @@ def proof_of_work(client_id, target_prefix, params):
             }
         n += 1
 
-@app.route("/pow")
-def pow():
-    hydrate_url = request.args.get("url")
-    target_prefix = request.args.get("prefix", "000")
+@app.route('/pow')
+def pow_endpoint():
+    url = request.args.get('url')
+    prefix = request.args.get('prefix', '000')  # default prefix
 
-    if not hydrate_url:
-        return jsonify({"error": "Missing hydrate url"}), 400
+    if not url:
+        return jsonify({"error": "Missing URL"}), 400
 
-    try:
-        # Ambil parameter dari URL
-        parsed = urlparse(hydrate_url)
-        query_params = dict(parse_qsl(parsed.query))
+    # Parse URL hydrate
+    parsed = urllib.parse.urlparse(url)
+    query_params = urllib.parse.parse_qs(parsed.query)
 
-        client_id = query_params.get("applicationId")
-        location_id = query_params.get("locationId")
-        hostname = query_params.get("hostname")
+    application_id = query_params.get("applicationId", [None])[0]
+    location_id = query_params.get("locationId", [None])[0]
+    hostname = query_params.get("hostname", [None])[0]
 
-        # Fetch dari hydrate URL
-        response = requests.get(hydrate_url)
-        data = response.json()
+    if not all([application_id, location_id, hostname]):
+        return jsonify({"error": "Incomplete data"}), 400
 
-        sessionId = data.get("sessionId")
-        instanceId = data.get("instanceId")
+    # Use applicationId as client_id
+    client_id = application_id
+    params = [application_id, location_id, hostname]
 
-        if not all([sessionId, instanceId, client_id, location_id, hostname]):
-            return jsonify({"error": "Incomplete data"}), 400
+    result = proof_of_work(client_id, prefix, params)
 
-        params = [client_id, location_id, instanceId]
-        result = proof_of_work(sessionId, target_prefix, params)
+    return jsonify({
+        "client_id": client_id,
+        "params": params,
+        "target_prefix": prefix,
+        "result": result
+    })
 
-        return jsonify({
-            "sessionId": sessionId,
-            "instanceId": instanceId,
-            "client_id": client_id,
-            "location_id": location_id,
-            "hostname": hostname,
-            "target_prefix": target_prefix,
-            "result": result
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000, debug=True)
