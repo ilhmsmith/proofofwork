@@ -27,7 +27,6 @@ def proof_of_work():
     # Ambil instanceId dan sessionId
     instance_id = data.get("instanceId")
     session_id = data.get("sessionId")
-    payment_method_tracking_id = data.get("paymentMethodTrackingId")
 
     if not instance_id or not session_id:
         return jsonify({"error": "Incomplete data from hydrate response"}), 500
@@ -47,7 +46,6 @@ def proof_of_work():
         "client_id": application_id,
         "instance_id": instance_id,
         "location_id": location_id,
-        "payment_method_tracking_id": payment_method_tracking_id,
         "pow_counter": nonce,
         "session_id": session_id
     })
